@@ -1,41 +1,36 @@
 import socket
+import ast
 
 q = 353
 alpha = 3
-darth_priv_key = 99 
+priv_key = 107
 
-def generate_key(pub_key):
-    return pow(pub_key, darth_priv_key, q)
+def generate_key(key):
+    return pow(key,priv_key,q)
 
 def darth():
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as alice_sock:
-        alice_sock.bind(("localhost", 5555))
-        alice_sock.listen()
+    with socket.socket(socket.AF_INET,socket.SOCK_STREAM) as s:
+        s.bind(("localhost",3000))
+        s.listen()
         print("[Darth] Waiting for Alice...")
-        alice_conn, _ = alice_sock.accept()
 
+        alice_conn, addr = s.accept()
         with alice_conn:
-            alice_pub_key = int(alice_conn.recv(1024).decode()) 
-            print(f"[Darth] Intercepted Alice's public key: {alice_pub_key}")
-
-            fake_darth_pub_for_alice = pow(alpha, darth_priv_key, q)
-            alice_conn.sendall(str(fake_darth_pub_for_alice).encode()) 
-
-            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as bob_sock:
-                bob_sock.connect(("localhost", 6666)) 
-
-                bob_sock.sendall(str(fake_darth_pub_for_alice).encode()) 
-                bob_pub_key = int(bob_sock.recv(1024).decode()) 
-                print(f"[Darth] Intercepted Bob's public key: {bob_pub_key}")
-
-                fake_darth_pub_for_bob = pow(alpha, darth_priv_key, q)
-                alice_conn.sendall(str(fake_darth_pub_for_bob).encode())  
+            alice_pub_key = ast.literal_eval(alice_conn.recv(1024).decode())
+            print("[Darth] Intercepted Alice's public key: ",alice_pub_key)
+            
+            darth_public_key = generate_key(alpha)
+            alice_conn.sendall(str(darth_public_key).encode())
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as bs:
+                bs.connect(("localhost",6060))
+                bs.sendall(str(darth_public_key).encode())
+                bob_pub_key = ast.literal_eval(bs.recv(1024).decode())
+                print("[Darth] Intercepted Bob's public key: ",bob_pub_key)
 
                 alice_shared_key = generate_key(alice_pub_key)
                 bob_shared_key = generate_key(bob_pub_key)
 
-                print(f"[Darth] Shared key with Alice: {alice_shared_key}")
-                print(f"[Darth] Shared key with Bob: {bob_shared_key}")
-
+                print("[Darth] Shared key with Alice: ",alice_shared_key)
+                print("[Darth] Shared key with Bob: ",bob_shared_key)
 if __name__ == "__main__":
     darth()
