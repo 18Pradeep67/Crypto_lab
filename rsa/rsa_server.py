@@ -28,7 +28,6 @@ def server():
     pu, pr = generate_rsa_keys()
     
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) 
         s.bind(("127.0.0.1", 5050))
         s.listen()
         print("\n[SERVER] Listening on port 5050...")
