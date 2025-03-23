@@ -20,6 +20,7 @@ def find_position(key_table, char):
 
 def playfair_cipher(text, key, encrypt=True):
     key_table = generate_key_table(key)
+    # print(key_table)
     text = text.upper().replace("J", "I").replace(" ", "")
 
     text_pairs = []
