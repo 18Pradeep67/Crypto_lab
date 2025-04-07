@@ -20,3 +20,5 @@ dec = des_decrypt(enc, key)
 
 print("Encrypted:", enc.hex())
 print("Decrypted:", dec)
+
+
